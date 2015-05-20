@@ -1,19 +1,20 @@
+rm(list=ls())
 require(rvest)
-## Fall semester
-url<- 'http://www.kurser.dtu.dk/search.aspx?lstTeachingPeriod=E1;E2;E3;E4;E5;E1A;E2A;E3A;E4A;E5A;E1B;E2B;E3B;E4B;E5B;E&YearGroup=2014-2015,2015-2016&btnSearch=Search'
-categories <- url %>% 
-    html() %>% 
-    html_nodes('#ctl00_PlaceHolderMain_PageHtml td div a') %>% 
-    html_text()
-categories<-unique(categories[200:210])
+source('GetUrlData.R')
+setwd('C:/Users/Dimitrios/Documents/Dimitris_general/R programming my projects/DTUprject')
+##link
+url<-'http://www.kurser.dtu.dk/search.aspx?lstTeachingPeriod=E1;E2;E3;E4;E5;E1A;E2A;E3A;E4A
+;E5A;E1B;E2B;E3B;E4B;E5B;E;F1;F2;F3;F4;F5;F1A;F2A;F3A;F4A;F5A;F1B;F2B;F3B;F4B;F5B;F&YearGroup
+=2014-2015,2015-2016&btnSearch=Search&menulanguage=en-GB'
+## Get courses
 
-departments <- url %>% 
-    html() %>% 
-    html_nodes('#lstDepartment option') %>% 
-    html_text()
+state1<-'#ctl00_PlaceHolderMain_PageHtml td div a'
+categories2<-GetUrlData(urlPath=url,state=state1)
+## Get Departments
+state12<-'#lstDepartment option'
+depatments<-GetUrlData(urlPath=url,state=state12)
 
-
-#Initialazing the data frame
+##Initialazing the data frame, CHECK TO MAKE OVERALL AND NOT FOR WINTER ONLY
 Period <- 'Winter-2014'
 df <- data.frame(matrix(nrow=length(categories),ncol=0))
 CourseNum <- substring(categories,1,5)
@@ -96,45 +97,3 @@ df$SecondaryDepartment <- gsub('[\r\n]','',SecondaryDepartment)
 AverageGradeTemp <- gsub('[\r\n (Efter7 trinsskalaen) ]','',AverageGrade)
 AverageGradeTemp <- gsub(',','.',AverageGradeTemp)
 df$AverageGrade <- gsub('-','',AverageGradeTemp)
-
-
-
-
-
-## Spring Semester
-url2 <- 'http://www.kurser.dtu.dk/search.aspx?lstTeachingPeriod=F1;F2;F3;F4;F5;F1A;F2A;F3A;F4A;F5A;F1B;F2B;F3B;F4B;F5B;F&YearGroup=2014-2015,2015-2016&btnSearch=Search'
-categories2 <- url2 %>% 
-    html() %>% 
-    html_nodes('#ctl00_PlaceHolderMain_PageHtml td div a') %>% 
-    html_text()
-
-## january
-url3 <- 'http://www.kurser.dtu.dk/search.aspx?lstTeachingPeriod=January&YearGroup=2014-2015,2015-2016&btnSearch=Search'
-categories <- url3 %>% 
-    html() %>% 
-    html_nodes('#ctl00_PlaceHolderMain_PageHtml td div a') %>% 
-    html_text()
-
-## July
-
-url4 <- 'http://www.kurser.dtu.dk/search.aspx?lstTeachingPeriod=July&YearGroup=2014-2015,2015-2016&btnSearch=Search'
-categories <- url4 %>% 
-    html() %>% 
-    html_nodes('#ctl00_PlaceHolderMain_PageHtml td div a') %>% 
-    html_text()
-
-## June
-
-url5 <- 'http://www.kurser.dtu.dk/search.aspx?lstTeachingPeriod=June&YearGroup=2014-2015,2015-2016&btnSearch=Search'
-categories <- url5 %>% 
-    html() %>% 
-    html_nodes('#ctl00_PlaceHolderMain_PageHtml td div a') %>% 
-    html_text()
-
-##August
-
-url6 <- 'http://www.kurser.dtu.dk/search.aspx?lstTeachingPeriod=August&YearGroup=2014-2015,2015-2016&btnSearch=Search'
-categories <- url6 %>% 
-    html() %>% 
-    html_nodes('#ctl00_PlaceHolderMain_PageHtml td div a') %>% 
-    html_text()
