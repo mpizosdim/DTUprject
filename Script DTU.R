@@ -24,6 +24,7 @@ jj <- 1
 CourseType <- rep(0,length(GeneralLinks))
 ECTS <- rep(0,length(GeneralLinks))
 Department <- rep(0,length(GeneralLinks))
+SecondaryDepartment <- rep(0,length(GeneralLinks))
 AverageGrade <- rep(0,length(GeneralLinks))
 #TempHist <- rep(0,c(100,100))
 for (ii in GeneralLinks){
@@ -52,13 +53,38 @@ for (ii in GeneralLinks){
         html() %>%
         html_nodes('.SubTableLevel2 tr:nth-child(1) .page+ td') %>%
         html_text
+    
+    res2<-try(SecondaryDepartment[jj]<-ii %>%
+                  html() %>%
+                  html_nodes('#pagecontents tr:nth-child(2) div') %>%
+                  html_text,silent=TRUE)
+    if (inherits(res2,'try-error')){
+        SecondaryDepartment[jj] <- 'No'
+    }else{
+        SecondaryDepartment[jj]<-ii %>%
+            html() %>%
+            html_nodes('#pagecontents tr:nth-child(2) div') %>%
+            html_text
+    }
+    
     AverageGrade[jj] <- GradeLinks2[jj] %>%
         html() %>%
         html_nodes('h2+ table tr:nth-child(4) td+ td') %>%
         html_text
     
     #for (kk in TempHist){
-    
+    res3<-try(SecondaryDepartment[jj]<-ii %>%
+                  html() %>%
+                  html_nodes('#pagecontents tr:nth-child(2) div') %>%
+                  html_text,silent=TRUE)
+    if (inherits(res3,'try-error')){
+        SecondaryDepartment[jj] <- 'No'
+    }else{
+        SecondaryDepartment[jj]<-ii %>%
+            html() %>%
+            html_nodes('#pagecontents tr:nth-child(2) div') %>%
+            html_text
+    }
     #}
     jj<-jj+1
 }
@@ -66,8 +92,10 @@ rownames(df)<-categories
 df$ECTS <- ECTS
 df$CourseType <- CourseType
 df$Department <- gsub('[\r\n]','',Department)
+df$SecondaryDepartment <- gsub('[\r\n]','',SecondaryDepartment)
 AverageGradeTemp <- gsub('[\r\n (Efter7 trinsskalaen) ]','',AverageGrade)
-df$AverageGrade <- gsub('-','',AverageGrade)
+AverageGradeTemp <- gsub(',','.',AverageGradeTemp)
+df$AverageGrade <- gsub('-','',AverageGradeTemp)
 
 
 
