@@ -1,94 +1,99 @@
+##packages and so on...
 rm(list=ls())
 require(rvest)
-source('GetUrlData.R')
+library(stringi)
+library(RCurl)
 setwd('C:/Users/Dimitrios/Documents/Dimitris_general/R programming my projects/DTUprject')
+source('GetUrlData.R')
 ##link
-url<-'http://www.kurser.dtu.dk/search.aspx?lstTeachingPeriod=E1;E2;E3;E4;E5;E1A;E2A;E3A;E4A
-;E5A;E1B;E2B;E3B;E4B;E5B;E;F1;F2;F3;F4;F5;F1A;F2A;F3A;F4A;F5A;F1B;F2B;F3B;F4B;F5B;F&YearGroup
-=2014-2015,2015-2016&btnSearch=Search&menulanguage=en-GB'
+url<-paste0('http://www.kurser.dtu.dk/search.aspx?lstTeachingPeriod=E1;E2;E3;E4;E5;E1A;',
+            'E2A;E3A;E4A;E5A;E1B;E2B;E3B;E4B;E5B;E;F1;F2;F3;F4;F5;F1A;F2A;F3A;F4A;F5A;F1B;',
+            'F2B;F3B;F4B;F5B;F&YearGroup=2014-2015,2015-2016&btnSearch=Search&menulanguage=en-GB')
+## States
+#first page(number)
+state_GetCourse<-'#ctl00_PlaceHolderMain_PageHtml td div a'
+state_GetDepartments <- '#lstDepartment option'
+state_GetECTS <- 'h2+ table tr:nth-child(4) .value'
+state_GetECTS2 <- '.normal+ table tr:nth-child(4) .value'
+state_CourseTypr <- '.value div:nth-child(1)'
+state_CourseTypr2 <-'.normal+ table tr:nth-child(5) .value'
+state_GetDepartment <- '.SubTableLevel2 tr:nth-child(1) .page+ td'
+state_GetDepartmentSecondary <- '#pagecontents tr:nth-child(2) div'
+#second page(information)
+state_PeriodNumber <- 'span td+ td'
 ## Get courses
+categories<-GetUrlData(urlPath=url,state=state_GetCourse)
+categories<-unique(categories)
 
-state1<-'#ctl00_PlaceHolderMain_PageHtml td div a'
-categories2<-GetUrlData(urlPath=url,state=state1)
 ## Get Departments
-state12<-'#lstDepartment option'
-depatments<-GetUrlData(urlPath=url,state=state12)
+
+depatments<-GetUrlData(urlPath=url,state=state_GetDepartments)
+
+## get courses number
+CourseNum <- substring(categories,1,5)
 
 ##Initialazing the data frame, CHECK TO MAKE OVERALL AND NOT FOR WINTER ONLY
-Period <- 'Winter-2014'
+
 df <- data.frame(matrix(nrow=length(categories),ncol=0))
-CourseNum <- substring(categories,1,5)
-GeneralLinks <- paste('http://www.kurser.dtu.dk/',CourseNum,'.aspx?menulanguage=en-gb',sep='')
+## Get Links
+CourseInfoLinks <- paste('http://www.kurser.dtu.dk/',CourseNum,'.aspx?menulanguage=en-gb',sep='')
 GradeLinks <- paste('http://www.kurser.dtu.dk/courses/',CourseNum,'/info/default.aspx',sep='')
-GradeLinks2 <- paste('http://karakterer.dtu.dk/Histogram/1/',CourseNum,'/',Period,sep='')
+
+
+CourseType <- rep(0,length(CourseInfoLinks))
+ECTS <- rep(0,length(CourseInfoLinks))
+Department <- rep(0,length(CourseInfoLinks))
+SecondaryDepartment <- rep(0,length(CourseInfoLinks))
+
 jj <- 1
-CourseType <- rep(0,length(GeneralLinks))
-ECTS <- rep(0,length(GeneralLinks))
-Department <- rep(0,length(GeneralLinks))
-SecondaryDepartment <- rep(0,length(GeneralLinks))
-AverageGrade <- rep(0,length(GeneralLinks))
-#TempHist <- rep(0,c(100,100))
-for (ii in GeneralLinks){
-    res<-try(ECTS[jj]<-ii %>%
-                 html() %>%
-                 html_nodes('h2+ table tr:nth-child(4) .value') %>%
-                 html_text,silent=TRUE)
-    if (inherits(res,'try-error')){
-        ECTS[jj]<-ii %>%
-            html() %>%
-            html_nodes('.normal+ table tr:nth-child(4) .value') %>%
-            html_text
+for (ii in CourseInfoLinks){
+    
+    if (url.exists(ii)){
+        #get ECTS credits
+        res<-try(ECTS[jj]<-GetUrlData(urlPath=ii,state_GetECTS),silent=TRUE)
+        resB<-try(ECTS[jj]<-GetUrlData(urlPath=ii,state_GetECTS2),silent=TRUE)
+        if (inherits(res,'try-error')){
+            ECTS[jj]<- GetUrlData(urlPath=ii,state_GetECTS2)
+        }else if(inherits(resB,'try-error')){
+            ECTS[jj]<-GetUrlData(urlPath=ii,state_GetECTS)
+        }else{
+            ECTS[jj]<-NA
+        }
+        #get CourseType credits
+        res2 <- try(CourseType[jj]<-GetUrlData(urlPath=ii,state_CourseTypr),silent=TRUE)
+        if (inherits(res2,'try-error')){
+            CourseType[jj] <- NA
+        }else{
+            CourseTypeTemp <- GetUrlData(urlPath=ii,state_CourseTypr)
+            CourseType[jj] <- CourseTypeTemp[1]
+        }
+        # get Deparment and secondary
+        res3 <- try(Department[jj]<-GetUrlData(urlPath=ii,state_GetDepartment),silent=TRUE)
+        if (inherits(res3,'try-error')){
+            Department[jj] <- NA
+        }else{
+            Department[jj] <- GetUrlData(urlPath=ii,state_GetDepartment)
+        }
+        res4<-try(SecondaryDepartment[jj]<-GetUrlData(urlPath=ii,state_GetDepartmentSecondary),silent=TRUE)
+        if (inherits(res4,'try-error')){
+            SecondaryDepartment[jj] <- 'No'
+        }else{
+            SecondaryDepartment[jj]<-GetUrlData(urlPath=ii,state_GetDepartmentSecondary)
+        }
+        
     }else{
-        ECTS[jj]<-ii %>%
-            html() %>%
-            html_nodes('h2+ table tr:nth-child(4) .value') %>%
-            html_text
-    }
-    CourseTypeTemp <- ii %>%
-        html() %>%
-        html_nodes('.value div:nth-child(1)') %>%
-        html_text
-    CourseType[jj] <- CourseTypeTemp[1]
+        ECTS[jj]<- NA
+        CourseType[jj]<- NA
+        Department[jj]<- NA
+        SecondaryDepartment[jj]<- NA
+    }    
     
-    Department[jj] <- ii %>%
-        html() %>%
-        html_nodes('.SubTableLevel2 tr:nth-child(1) .page+ td') %>%
-        html_text
-    
-    res2<-try(SecondaryDepartment[jj]<-ii %>%
-                  html() %>%
-                  html_nodes('#pagecontents tr:nth-child(2) div') %>%
-                  html_text,silent=TRUE)
-    if (inherits(res2,'try-error')){
-        SecondaryDepartment[jj] <- 'No'
-    }else{
-        SecondaryDepartment[jj]<-ii %>%
-            html() %>%
-            html_nodes('#pagecontents tr:nth-child(2) div') %>%
-            html_text
-    }
-    
-    AverageGrade[jj] <- GradeLinks2[jj] %>%
-        html() %>%
-        html_nodes('h2+ table tr:nth-child(4) td+ td') %>%
-        html_text
-    
-    #for (kk in TempHist){
-    res3<-try(SecondaryDepartment[jj]<-ii %>%
-                  html() %>%
-                  html_nodes('#pagecontents tr:nth-child(2) div') %>%
-                  html_text,silent=TRUE)
-    if (inherits(res3,'try-error')){
-        SecondaryDepartment[jj] <- 'No'
-    }else{
-        SecondaryDepartment[jj]<-ii %>%
-            html() %>%
-            html_nodes('#pagecontents tr:nth-child(2) div') %>%
-            html_text
-    }
-    #}
     jj<-jj+1
 }
+
+
+
+
 rownames(df)<-categories
 df$ECTS <- ECTS
 df$CourseType <- CourseType
