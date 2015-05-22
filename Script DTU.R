@@ -3,6 +3,7 @@ rm(list=ls())
 require(rvest)
 library(stringi)
 library(RCurl)
+library(rlist)
 setwd('C:/Users/Dimitrios/Documents/Dimitris_general/R programming my projects/DTUprject')
 source('GetUrlData.R')
 ##link
@@ -21,6 +22,7 @@ state_GetDepartment <- '.SubTableLevel2 tr:nth-child(1) .page+ td'
 state_GetDepartmentSecondary <- '#pagecontents tr:nth-child(2) div'
 #second page(information)
 state_PeriodNumber <- 'span td+ td'
+
 ## Get courses
 categories<-GetUrlData(urlPath=url,state=state_GetCourse)
 categories<-unique(categories)
@@ -46,7 +48,7 @@ Department <- rep(0,length(CourseInfoLinks))
 SecondaryDepartment <- rep(0,length(CourseInfoLinks))
 
 jj <- 1
-for (ii in CourseInfoLinks){
+for (ii in CourseInfoLinks[1:30]){
     
     if (url.exists(ii)){
         #get ECTS credits
@@ -90,6 +92,45 @@ for (ii in CourseInfoLinks){
     
     jj<-jj+1
 }
+
+NumberListCourse<-list()
+jj<-1
+for (ii in GradeLinks[1:10]){
+    if (url.exists(ii)){
+        res5<-try(NumberListCourseTemp<-GetUrlData(urlPath=ii,state_PeriodNumber),silent=TRUE)
+        if (inherits(res5,'try-error')){
+            NumberListCourse <- list.append(NumberListCourse,NA)
+        }else{
+            NumberListCourseTemp<-GetUrlData(urlPath=ii,state_PeriodNumber)
+            NumberListCourse <- list.append(NumberListCourse,NumberListCourseTemp)
+        }
+    }else{
+        NumberListCourse <- list.append(NumberListCourse,NA)
+    }
+    
+}
+NumberListCourse<-stri_split(as.character(NumberListCourse),regex="\\s+")
+f1 <- function(s) gsub('s','Summer-20',s)
+f2 <- function(s) gsub('v','Winter-20',s)
+f3 <- function(s,x) paste('http://karakterer.dtu.dk/Histogram/1/',s,'/',x,sep='')
+NumberListCourse <- sapply(NumberListCourse,f1)
+NumberListCourse <- sapply(NumberListCourse,f2)
+
+
+for (ii in seq_along(CourseNum[1:10])){
+    for (jj in seq_along(NumberListCourse[[ii]])){
+        NameTable<-NumberListCourse[[ii]][jj]
+        NumberListCourseFinal[[ii]][jj]<- paste('http://karakterer.dtu.dk/Histogram/1/',CourseNum[ii],'/',NumberListCourse[[ii]][jj],sep='')
+        
+    }   
+    
+}
+
+
+
+
+
+td tr+ tr td:nth-child(2)
 
 
 
