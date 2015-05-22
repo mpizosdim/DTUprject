@@ -23,6 +23,9 @@ state_GetDepartmentSecondary <- '#pagecontents tr:nth-child(2) div'
 #second page(information)
 state_PeriodNumber <- 'span td+ td'
 
+##Third page
+state_GetGradeTable <- 'td tr+ tr td:nth-child(2)'
+state_Attendants <- 'h2+ table td+ td'
 ## Get courses
 categories<-GetUrlData(urlPath=url,state=state_GetCourse)
 categories<-unique(categories)
@@ -48,7 +51,7 @@ Department <- rep(0,length(CourseInfoLinks))
 SecondaryDepartment <- rep(0,length(CourseInfoLinks))
 
 jj <- 1
-for (ii in CourseInfoLinks[1:30]){
+for (ii in CourseInfoLinks[1:10]){
     
     if (url.exists(ii)){
         #get ECTS credits
@@ -101,7 +104,8 @@ for (ii in GradeLinks[1:10]){
         if (inherits(res5,'try-error')){
             NumberListCourse <- list.append(NumberListCourse,NA)
         }else{
-            NumberListCourseTemp<-GetUrlData(urlPath=ii,state_PeriodNumber)
+            NumberListCourseTemp <- GetUrlData(urlPath=ii,state_PeriodNumber)
+            NumberListCourseTemp <- substr(NumberListCourseTemp, 1, nchar(NumberListCourseTemp)-1) 
             NumberListCourse <- list.append(NumberListCourse,NumberListCourseTemp)
         }
     }else{
@@ -117,10 +121,39 @@ NumberListCourse <- sapply(NumberListCourse,f1)
 NumberListCourse <- sapply(NumberListCourse,f2)
 
 
+TotalData <- list()
+DATA<-list()
+browser()
 for (ii in seq_along(CourseNum[1:10])){
+    DATA[ii]<-list()
     for (jj in seq_along(NumberListCourse[[ii]])){
-        NameTable<-NumberListCourse[[ii]][jj]
-        NumberListCourseFinal[[ii]][jj]<- paste('http://karakterer.dtu.dk/Histogram/1/',CourseNum[ii],'/',NumberListCourse[[ii]][jj],sep='')
+        NameTable <- NumberListCourse[[ii]][jj]
+        NumberListCourse[[ii]][jj] <- paste('http://karakterer.dtu.dk/Histogram/1/',CourseNum[ii],'/',NumberListCourse[[ii]][jj],sep='')
+        
+        
+        if (url.exists(NumberListCourse[[ii]][jj])){
+            res6<-try(NumberListCourseTemp<-GetUrlData(urlPath=NumberListCourse[[ii]][jj],state_GetGradeTable),silent=TRUE)
+            if (inherits(res6,'try-error')){
+                Grades<-NA
+            }else{
+                Grades<-GetUrlData(urlPath=NumberListCourse[[ii]][jj],state_GetGradeTable)
+                Grades<-gsub('[\r\n ]','',Grades)     
+            }
+            
+            res7<-try(NumberListCourseTemp<-GetUrlData(urlPath=NumberListCourse[[ii]][jj],state_Attendants),silent=TRUE)
+            if (inherits(res7,'try-error')){
+                Attendants<-NA
+            }else{
+                Attendants <- GetUrlData(urlPath=NumberListCourse[[ii]][jj],state_Attendants)
+                Attendants <- gsub('[\r\n ]','',Attendants)
+                Attendants <- gsub('\\(.*?\\)', '', Attendants)
+            }
+            
+        }else{
+            Grades <- NA
+            Attendants <- NA
+        }
+        DATA[ii]<-list.append(DATA[ii],list(Grades=Grades,GeneralInfo=Attendants))
         
     }   
     
@@ -130,7 +163,7 @@ for (ii in seq_along(CourseNum[1:10])){
 
 
 
-td tr+ tr td:nth-child(2)
+
 
 
 
