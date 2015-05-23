@@ -7,7 +7,7 @@ GetUrlData <- function(urlPath,state,check=FALSE){
         categories    
     }else{
         if (url.exists(urlPath)){
-            checker<-try(NumberListCourseTemp<-GetUrlData(urlPath=urlPath,state),silent=TRUE)
+            checker<-try(NumberListCourseTemp<-GetUrlData(urlPath=urlPath,state))
             if (inherits(checker,'try-error')){
                 categories <- NA
             }else{
