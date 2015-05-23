@@ -52,8 +52,7 @@ Department <- rep(0,length(CourseInfoLinks))
 SecondaryDepartment <- rep(0,length(CourseInfoLinks))
 
 jj <- 1
-for (ii in CourseInfoLinks[1:10]){
-    
+for (ii in CourseInfoLinks[1:5]){
     if (url.exists(ii)){
         #get ECTS credits
         res<-try(ECTS[jj]<-GetUrlData(urlPath=ii,state_GetECTS),silent=TRUE)
@@ -99,7 +98,7 @@ for (ii in CourseInfoLinks[1:10]){
 
 NumberListCourse<-list()
 jj<-1
-for (ii in GradeLinks[1:10]){
+for (ii in GradeLinks[1:5]){
     if (url.exists(ii)){
         res5<-try(NumberListCourseTemp<-GetUrlData(urlPath=ii,state_PeriodNumber),silent=TRUE)
         if (inherits(res5,'try-error')){
@@ -128,7 +127,7 @@ NumberListCourse <- sapply(NumberListCourse,f2)
 
 TotalData <- list()
 DATA<-list()
-for (ii in seq_along(CourseNum[1:10])){
+for (ii in seq_along(CourseNum[1:5])){
     DATA<-list()
     for (jj in seq_along(NumberListCourse[[ii]])){
         NameTable <- NumberListCourse[[ii]][jj]
@@ -152,6 +151,7 @@ for (ii in seq_along(CourseNum[1:10])){
                 Attendants <- GetUrlData(urlPath=NumberListCourse[[ii]][jj],state_Attendants)
                 Attendants <- gsub('[\r\n ]','',Attendants)
                 Attendants <- gsub('\\(.*?\\)', '', Attendants)
+                Attendants <- gsub(',','.',Attendants)
             }
         }else if(url.exists(NumberListCourse2)){
             res8<-try(NumberListCourseTemp<-GetUrlData(urlPath=NumberListCourse2,state_GetGradeTable),silent=TRUE)
@@ -169,6 +169,7 @@ for (ii in seq_along(CourseNum[1:10])){
                 Attendants <- GetUrlData(urlPath=NumberListCourse2,state_Attendants)
                 Attendants <- gsub('[\r\n ]','',Attendants)
                 Attendants <- gsub('\\(.*?\\)', '', Attendants)
+                Attendants <- gsub(',','.',Attendants)
             }
             
         }else if(url.exists(NumberListCourse3)){
@@ -187,6 +188,7 @@ for (ii in seq_along(CourseNum[1:10])){
                 Attendants <- GetUrlData(urlPath=NumberListCourse3,state_Attendants)
                 Attendants <- gsub('[\r\n ]','',Attendants)
                 Attendants <- gsub('\\(.*?\\)', '', Attendants)
+                Attendants <- gsub(',','.',Attendants)
             }
         }else{
             Grades <- NA
@@ -198,7 +200,10 @@ for (ii in seq_along(CourseNum[1:10])){
         if (length(Attendants)==0){
             Attendants<-NA
         }
-        tmp <- list(Grades=Grades,GeneralInfo=Attendants)
+        if (length(Grades)>8){
+            Grades <- Grades[1:8]
+        }
+        tmp <- list(Grades=as.numeric(Grades),GeneralInfo=as.numeric(Attendants))
         DATA[[NameTable]] <- tmp
         
     }
@@ -209,7 +214,7 @@ for (ii in seq_along(CourseNum[1:10])){
 
 
 
-
+lapply(TotalData, function(x) x[names(x)=='Summer-2006'])
 
 
 
