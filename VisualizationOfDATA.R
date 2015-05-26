@@ -1,0 +1,25 @@
+rm(list=ls())
+setwd('C:/Users/Dimitrios/Documents/Dimitris_general/R programming my projects/DTUprject')
+load('lol')
+load('lol2')
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+a<-data.frame(Results)
+Data <- tbl_df(a)
+UniqueCourseType <- unique(Results$CourseType)
+UniqueECTS <- unique(Results$ECTS)
+sUM5ECTS <- sum(ECTS=='5',na.rm=TRUE)
+numberOfBScCourses <- nrow(filter(Data,CourseType=='BSc'))
+numberOfMScCourses <- nrow(filter(Data,CourseType=='MSc'))
+numberOfPhDCourses <- nrow(filter(Data,CourseType=='Ph.D.'))
+numberOfDiplomaCourses <- nrow(filter(Data,CourseType=='Diplomingeniør'))
+numberOfDeltiCourses <- nrow(filter(Data,CourseType=='Deltidsdiplom'))
+numberOfPartTimeCourses <- nrow(filter(Data,CourseType=='Parttime master'))
+height <- c(numberOfBScCourses,numberOfDeltiCourses,numberOfDiplomaCourses,numberOfMScCourses,numberOfPartTimeCourses,numberOfPhDCourses)
+# tbl_df
+ListConsentraded <- list(Course = CourseNum,CourseType= CourseType, ECTS=ECTS, Department = Department, SecondaryDepartment = SecondaryDepartment)
+
+ggplot(Data, aes(x=ECTS,y=CourseType,fill=Cultivar))+
+    geom_bar(stat='identity')+
+    guides(fill=guide_legend(reverse=TRUE))

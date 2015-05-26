@@ -10,6 +10,7 @@ source('GetUrlData.R')
 url<-paste0('http://www.kurser.dtu.dk/search.aspx?lstTeachingPeriod=E1;E2;E3;E4;E5;E1A;',
             'E2A;E3A;E4A;E5A;E1B;E2B;E3B;E4B;E5B;E;F1;F2;F3;F4;F5;F1A;F2A;F3A;F4A;F5A;F1B;',
             'F2B;F3B;F4B;F5B;F&YearGroup=2014-2015,2015-2016&btnSearch=Search&menulanguage=en-GB')
+url2 <-'http://www.kurser.dtu.dk/search.aspx?lstTeachingPeriod=E1;E2;E3;E4;E5;E1A;E2A;E3A;E4A;E5A;E1B;E2B;E3B;E4B;E5B;E,E1;E1A;E1B,E2;E2A;E2B,E3;E3A;E3B,E4;E4A;E4B,E5;E5A;E5B,F1;F2;F3;F4;F5;F1A;F2A;F3A;F4A;F5A;F1B;F2B;F3B;F4B;F5B;F,F1;F1A;F1B,F2;F2A;F2B,F3;F3A;F3B,F4;F4A;F4B,F5;F5A;F5B,January,August;July;SummerSchool;June,August,July,June,SummerSchool&YearGroup=2014-2015,2015-2016&btnSearch=Search'
 ## States
 #first page(number)
 state_GetCourse<-'#ctl00_PlaceHolderMain_PageHtml td div a'
@@ -19,7 +20,7 @@ state_GetECTS2 <- '.normal+ table tr:nth-child(4) .value'
 state_CourseTypr <- '.value div:nth-child(1)'
 state_CourseTypr2 <-'.normal+ table tr:nth-child(5) .value'
 state_GetDepartment <- '.SubTableLevel2 tr:nth-child(1) .page+ td'
-state_GetDepartmentSecondary <- '#pagecontents tr:nth-child(2) div'
+state_GetDepartmentSecondary <- 'tr:nth-child(2) div'
 #second page(information)
 state_PeriodNumber <- 'span td+ td'
 
@@ -28,7 +29,7 @@ state_GetGradeTable <- 'td tr+ tr td:nth-child(2)'
 #state_Attendants <- 'h2+ table td+ td'
 state_Attendants <-'h2+ table tr:nth-child(4) td+ td , h2+ table tr:nth-child(3) td+ td , h2+ table tr:nth-child(2) td+ td , h2+ table tr:nth-child(1) td+ td'
 ## Get courses
-categories<-GetUrlData(urlPath=url,state=state_GetCourse)
+categories<-GetUrlData(urlPath=url2,state=state_GetCourse)
 categories<-unique(categories)
 
 ## Get Departments
@@ -38,7 +39,7 @@ depatments<-GetUrlData(urlPath=url,state=state_GetDepartments)
 ## get courses number
 CourseNum <- substring(categories,1,5)
 
-##Initialazing the data frame, CHECK TO MAKE OVERALL AND NOT FOR WINTER ONLY
+##Initialazing the data frame
 
 df <- data.frame(matrix(nrow=length(categories),ncol=0))
 ## Get Links
@@ -52,7 +53,7 @@ Department <- rep(0,length(CourseInfoLinks))
 SecondaryDepartment <- rep(0,length(CourseInfoLinks))
 
 jj <- 1
-for (ii in CourseInfoLinks[1:5]){
+for (ii in CourseInfoLinks){
     if (url.exists(ii)){
         #get ECTS credits
         res<-try(ECTS[jj]<-GetUrlData(urlPath=ii,state_GetECTS),silent=TRUE)
@@ -79,6 +80,7 @@ for (ii in CourseInfoLinks[1:5]){
         }else{
             Department[jj] <- GetUrlData(urlPath=ii,state_GetDepartment)
         }
+        
         res4<-try(SecondaryDepartment[jj]<-GetUrlData(urlPath=ii,state_GetDepartmentSecondary),silent=TRUE)
         if (inherits(res4,'try-error')){
             SecondaryDepartment[jj] <- 'No'
@@ -92,7 +94,9 @@ for (ii in CourseInfoLinks[1:5]){
         Department[jj]<- NA
         SecondaryDepartment[jj]<- NA
     }    
-    
+    ECTS[jj] <- gsub(',','.',ECTS[jj])
+    Department[jj] <- gsub('[\r\n ]',' ',Department[jj])  
+    SecondaryDepartment[jj] <- gsub('[\r\n ]',' ',SecondaryDepartment[jj])  
     jj<-jj+1
 }
 
@@ -228,3 +232,17 @@ SecondaryDepartment <- gsub('[\r\n]','',SecondaryDepartment)
 #AverageGradeTemp <- gsub('[\r\n (Efter7 trinsskalaen) ]','',AverageGrade)
 #AverageGradeTemp <- gsub(',','.',AverageGradeTemp)
 #df$AverageGrade <- gsub('-','',AverageGradeTemp)
+
+
+TotalData
+ECTS
+CourseType
+Department
+SecondaryDepartment
+
+CourseType <- unique()
+UniqueECTS <- unique(ECTS)
+sUM5ECTS <- sum(ECTS=='5',na.rm=TRUE)
+
+#dataExtracted <- data.frame(row.names=CourseNum,CourseType = CourseType, ECTS = ECTS, Department = Department, SecondaryDepartment = SecondaryDepartment)
+
