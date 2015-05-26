@@ -102,7 +102,7 @@ for (ii in CourseInfoLinks){
 
 NumberListCourse<-list()
 jj<-1
-for (ii in GradeLinks[1:5]){
+for (ii in GradeLinks){
     if (url.exists(ii)){
         res5<-try(NumberListCourseTemp<-GetUrlData(urlPath=ii,state_PeriodNumber),silent=TRUE)
         if (inherits(res5,'try-error')){
@@ -131,7 +131,7 @@ NumberListCourse <- sapply(NumberListCourse,f2)
 
 TotalData <- list()
 DATA<-list()
-for (ii in seq_along(CourseNum[1:5])){
+for (ii in seq_along(CourseNum)){
     DATA<-list()
     for (jj in seq_along(NumberListCourse[[ii]])){
         NameTable <- NumberListCourse[[ii]][jj]
@@ -214,6 +214,72 @@ for (ii in seq_along(CourseNum[1:5])){
     TotalData[[CourseNum[ii]]]<-DATA
     
 }
+
+### add different code for less memory
+#1:100,101:200...
+CourseNumSplit <- split(CourseNum,ceiling(seq_along(CourseNum)/15))
+NumberListCourseSplit <- split(NumberListCourse,ceiling(seq_along(NumberListCourse)/15))
+TotalData <- list()
+DATA<-list()
+kk<-1
+for (ii in seq_along(CourseNumSplit[[kk]])){
+    DATA<-list()
+    for (jj in seq_along(NumberListCourseSplit[[kk]][[ii]])){
+        NameTable <- NumberListCourseSplit[[kk]][[ii]][jj]
+        NumberListCourse1 <- paste('http://karakterer.dtu.dk/Histogram/1/',CourseNumSplit[[kk]][ii],'/',NameTable,sep='')
+        NumberListCourse2 <- paste('http://karakterer.dtu.dk/Histogram/1/',CourseNumSplit[[kk]][ii],'-1/',NameTable,sep='')
+        NumberListCourse3 <- paste('http://karakterer.dtu.dk/Histogram/1/',CourseNumSplit[[kk]][ii],'-2/',NameTable,sep='')
+        
+        if (url.exists(NumberListCourse1)){
+            
+            res7<-try(NumberListCourseTemp <- GetUrlData(urlPath=NumberListCourse1,state_Attendants),silent=TRUE)
+            if (inherits(res7,'try-error')){
+                Attendants<-NA
+            }else{
+                Attendants <- GetUrlData(urlPath=NumberListCourse1,state_Attendants)
+                Attendants <- gsub('[\r\n ]','',Attendants)
+                Attendants <- gsub('\\(.*?\\)', '', Attendants)
+                Attendants <- gsub(',','.',Attendants)
+            }
+        }else if(url.exists(NumberListCourse2)){
+            
+            res9<-try(NumberListCourseTemp<-GetUrlData(urlPath=NumberListCourse2,state_Attendants),silent=TRUE)
+            if (inherits(res9,'try-error')){
+                Attendants<-NA
+            }else{
+                Attendants <- GetUrlData(urlPath=NumberListCourse2,state_Attendants)
+                Attendants <- gsub('[\r\n ]','',Attendants)
+                Attendants <- gsub('\\(.*?\\)', '', Attendants)
+                Attendants <- gsub(',','.',Attendants)
+            }
+            
+        }else if(url.exists(NumberListCourse3)){
+            
+            res9<-try(NumberListCourseTemp<-GetUrlData(urlPath=NumberListCourse3,state_Attendants),silent=TRUE)
+            if (inherits(res9,'try-error')){
+                Attendants<-NA
+            }else{
+                Attendants <- GetUrlData(urlPath=NumberListCourse3,state_Attendants)
+                Attendants <- gsub('[\r\n ]','',Attendants)
+                Attendants <- gsub('\\(.*?\\)', '', Attendants)
+                Attendants <- gsub(',','.',Attendants)
+            }
+        }else{
+            Attendants <- NA
+        }
+        
+        if (length(Attendants)==0){
+            Attendants<-NA
+        }
+        
+        tmp <- list(GeneralInfo=as.numeric(Attendants))
+        DATA[[NameTable]] <- tmp
+        
+    }
+    TotalData[[CourseNumSplit[[kk]][ii]]]<-DATA
+    closeAllConnections()
+}
+
 
 
 
