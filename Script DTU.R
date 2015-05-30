@@ -38,7 +38,7 @@ depatments<-GetUrlData(urlPath=url,state=state_GetDepartments)
 
 ## get courses number
 CourseNum <- substring(categories,1,5)
-
+CourseNum <- unique(CourseNum)
 ##Initialazing the data frame
 
 df <- data.frame(matrix(nrow=length(categories),ncol=0))
@@ -99,6 +99,9 @@ for (ii in CourseInfoLinks){
     SecondaryDepartment[jj] <- gsub('[\r\n ]',' ',SecondaryDepartment[jj])  
     jj<-jj+1
 }
+
+
+
 
 NumberListCourse<-list()
 jj<-1
@@ -217,11 +220,12 @@ for (ii in seq_along(CourseNum)){
 
 ### add different code for less memory
 #1:100,101:200...
-CourseNumSplit <- split(CourseNum,ceiling(seq_along(CourseNum)/15))
-NumberListCourseSplit <- split(NumberListCourse,ceiling(seq_along(NumberListCourse)/15))
+load('DATA2')
+CourseNumSplit <- split(CourseNum,ceiling(seq_along(CourseNum)/100))
+NumberListCourseSplit <- split(NumberListCourse,ceiling(seq_along(NumberListCourse)/100))
 TotalData <- list()
 DATA<-list()
-kk<-1
+kk<-17
 for (ii in seq_along(CourseNumSplit[[kk]])){
     DATA<-list()
     for (jj in seq_along(NumberListCourseSplit[[kk]][[ii]])){
@@ -281,8 +285,8 @@ for (ii in seq_along(CourseNumSplit[[kk]])){
 }
 
 
-
-
+save('TotalData',7file='C:/Users/Dimitrios/Documents/Dimitris_general/R programming my projects/DTUprject/DATA3_17')
+remove('TotalData')
 
 lapply(TotalData, function(x) x[names(x)=='Summer-2006'])
 
