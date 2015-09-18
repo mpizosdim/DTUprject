@@ -121,15 +121,15 @@ for (ii in GradeLinks){
     
 }
 #browser()
-NumberListCourse<-stri_split(as.character(NumberListCourse),regex="\\s+")
+NumberListCourse2<-stri_split(as.character(NumberListCourse2),regex="\\s+")
 f1 <- function(s) gsub('s','Summer-20',s)
 f2 <- function(s) gsub('v','Winter-20',s)
 f3 <- function(s) gsub('c','',s)
 f4 <- function(s) gsub('[[:punct:]]','',s)
-NumberListCourse <- sapply(NumberListCourse,f3)
-NumberListCourse <- sapply(NumberListCourse,f4)
-NumberListCourse <- sapply(NumberListCourse,f1)
-NumberListCourse <- sapply(NumberListCourse,f2)
+NumberListCourse2 <- sapply(NumberListCourse2,f3)
+NumberListCourse2 <- sapply(NumberListCourse2,f4)
+NumberListCourse2 <- sapply(NumberListCourse2,f1)
+NumberListCourse2 <- sapply(NumberListCourse2,f2)
 
 
 TotalData <- list()
@@ -222,10 +222,10 @@ for (ii in seq_along(CourseNum)){
 #1:100,101:200...
 load('DATA2')
 CourseNumSplit <- split(CourseNum,ceiling(seq_along(CourseNum)/100))
-NumberListCourseSplit <- split(NumberListCourse,ceiling(seq_along(NumberListCourse)/100))
+NumberListCourseSplit <- split(NumberListCourse2,ceiling(seq_along(NumberListCourse2)/100))
 TotalData <- list()
 DATA<-list()
-kk<-17
+kk<-3
 for (ii in seq_along(CourseNumSplit[[kk]])){
     DATA<-list()
     for (jj in seq_along(NumberListCourseSplit[[kk]][[ii]])){
@@ -285,7 +285,7 @@ for (ii in seq_along(CourseNumSplit[[kk]])){
 }
 
 
-save('TotalData',7file='C:/Users/Dimitrios/Documents/Dimitris_general/R programming my projects/DTUprject/DATA3_17')
+save('TotalData',file='C:/Users/Dimitrios/Documents/Dimitris_general/R programming my projects/DTUprject/DATA3_3')
 remove('TotalData')
 
 lapply(TotalData, function(x) x[names(x)=='Summer-2006'])

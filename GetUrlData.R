@@ -1,4 +1,5 @@
 GetUrlData <- function(urlPath,state,check=FALSE){
+    require(rvest)
     if (check==FALSE){
         categories <- urlPath %>% 
             html() %>% 
